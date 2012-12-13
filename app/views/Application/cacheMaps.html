@@ -1,0 +1,62 @@
+#{extends 'main.html' /}
+#{set title:'Street Viewer' /}
+<script type="text/javascript">
+  var map = null;
+	$(function(){
+		//init markers
+    $.post("@{Application.firstMarker()}", function(json){
+      initialize(json);
+      google.maps.event.addListener(map,"click",function(e){
+    	  var coord = getCoordinate(e.latLng,map);
+    	  $("#x").val(coord.x);
+    	  $("#y").val(coord.y);
+    	  $("#zoom").val(coord.zoom);
+      });
+    });
+	});
+	function changePano(fileName,offset,length){}
+	function cacheTile(){
+		var x = $("#x").val();
+		var y = $("#y").val();
+		var zoom = $("#zoom").val();
+		var zoomMax = $("#zoomMax").val();
+		if(x > 0 && y > 0 && zoom > 0 && zoomMax > 0){
+		    var count  = caculateImageCount(zoomMax-zoom);
+		    if(confirm(count+" images will be cached，continue？")){
+		      $.post("@{Application.cacheTile}",{x:x,y:y,zoom:zoom,zoomMax:zoomMax},function(data){
+		            
+		        });
+		    }
+		}else{
+			alert("Please click the Map to choose which Tile you want to cache.");
+		}
+		
+	}
+	function caculateImageCount(n){
+		var sum = (1-Math.pow(4,(n+1)))/(1-4);
+		return sum;
+	}
+	/* console.log(" -- " + $(".cacheTile").length) */
+</script>
+
+<div class="container-fluid">
+  <div class="span1">&nbsp;</div>
+  <div class="span9 well">
+    <div class="form-inline" style="height: 40px" align="center">
+      <div>
+      <label>x:</label><input id="x" type="text" class="input-small" disabled="disabled"/>
+      <label>y:</label><input id="y" type="text" class="input-small" disabled="disabled"/>
+      <label>zoom:</label><input id="zoom" type="text" class="input-small" disabled="disabled"/>
+      <label>zoom-max:</label><input id="zoomMax" type="text" class="input-small" value="21"/>
+      <button class="btn" onclick="cacheTile()">Cache</button>
+      </div>
+    </div>
+	  <div id="map_canvas" style="height: 450px;clear: both;">
+	    
+	  </div>
+	  <div class="progress progress-striped active" id="progress-bar" style="display: none">
+      <div class="bar" style="width: 40%;"></div>
+    </div>
+  </div>
+  <div class="span2">&nbsp;</div>
+</div>

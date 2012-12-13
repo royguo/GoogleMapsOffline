@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Google Maps JavaScript API v3 Example: Image MapTypes</title>
+<script type="text/javascript" src="mapapi.js"></script>
+<script>
+  function CoordMapType(tileSize) {
+    this.tileSize = tileSize;
+  }
+ 
+  CoordMapType.prototype.getTile = function(coord, zoom, ownerDocument) {
+    var div = ownerDocument.createElement('DIV');
+    var ymax = 1 << zoom;
+		var y = ymax - coord.y - 1;
+
+    div.innerHTML = coord.x + "," + y + "," + zoom;
+    div.style.width = this.tileSize.width + 'px';
+    div.style.height = this.tileSize.height + 'px';
+    div.style.fontSize = '10';
+    div.style.borderStyle = 'solid';
+    div.style.borderWidth = '1px';
+    div.style.borderColor = '#AAAAAA';
+    
+    //appaend locations
+    document.getElementById("map_images").innerHTML = document.getElementById("map_images").innerHTML + "<div>" + coord + "," + zoom + "</div>"
+    return div;
+  };
+  function LocalMapType() {}
+  
+  LocalMapType.prototype.tileSize = new google.maps.Size(256, 256);
+  LocalMapType.prototype.maxZoom = 17;
+  LocalMapType.prototype.minZoom = 14;
+  LocalMapType.prototype.name = "本地";
+  LocalMapType.prototype.alt = "显示本地地图";
+  LocalMapType.prototype.getTile = function(coord, zoom, ownerDocument) {
+      var img = ownerDocument.createElement("img");
+      img.style.width = this.tileSize.width + "px";
+      img.style.height = this.tileSize.height + "px";
+      var ymax = 1 << zoom;
+			var y = ymax - coord.y - 1;
+      //var strURL = "mytile\\" + zoom + "\\" + coord.x + "\\" + y + ".png";
+      var strURL = "expotile/" + zoom + "/" + coord.x + "/" + y + ".png";  
+      img.src = strURL;
+      return img;
+  };
+  var localMapType = new LocalMapType();
+  function initialize() {
+    var myLatlng = new google.maps.LatLng(31.18439, 121.49454);
+    var myOptions = {
+      center: myLatlng,
+      zoom: 14,
+      streetViewControl: false,
+      mapTypeControlOptions: {
+            mapTypeIds: ["local", google.maps.MapTypeId.ROADMAP]
+        }
+    };
+    var map = new google.maps.Map(document.getElementById("map_canvas"),
+        myOptions);
+    //map.setMapTypeId('satellite');
+    //map.MapTypes.insertAt(0, moonMapType);
+    map.mapTypes.set('local', localMapType);
+    map.setMapTypeId('local');
+    map.overlayMapTypes.insertAt(0, new CoordMapType(new google.maps.Size(256, 256)));
+  }
+  </script>
+</head>
+<body onload="initialize()">
+  <div id="map_canvas" style="width: 640px; height: 480px;float: left;"></div>
+  <div id="map_images" style="height: 480px;float: right;width: 300px"></div>
+</body>
+</html>
